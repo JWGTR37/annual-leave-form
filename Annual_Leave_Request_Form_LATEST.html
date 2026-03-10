@@ -448,15 +448,18 @@
         _subject: emailSubject,
         _cc: 'sebastien.fahr@gtrailway.com',
         _replyto: requesterEmail,
-        _template: 'box',
-        message: emailBody,
-        staff_member: name,
-        staff_email: requesterEmail,
-        team: team,
-        date_from: formatDate(startDate),
-        date_to: formatDate(endDate),
-        working_days: days,
-        leave_type: leaveType
+        _template: 'table',
+        _captcha: 'false',
+        'Action Required': 'Reply to this email with APPROVED or DECLINED',
+        'Staff Member': name,
+        'Staff Email': requesterEmail,
+        'Team': team,
+        'Date From': formatDate(startDate),
+        'Date To': formatDate(endDate),
+        'Working Days': days,
+        'Leave Type': leaveType,
+        'Date of Request': formatDate(requestDate),
+        'Notes': notes || 'No additional notes provided'
       })
     }).then(function(res){ return res.json(); })
       .then(function(data){ console.log('FormSubmit:', data); })
