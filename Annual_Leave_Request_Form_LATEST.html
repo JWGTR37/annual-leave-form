@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Annual Leave Request</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green: #6EC72D;
+    --green-light: #8ED44F;
+    --green-pale: #EBF8D8;
+    --green-mid: #5CB820;
+    --cream: #F5FCF0;
+    --dark: #1A1A1A;
+    --grey: #555555;
+    --white: #ffffff;
+    --shadow: 0 4px 24px rgba(110,199,45,0.13);
+    --radius: 14px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 16px 60px;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: radial-gradient(circle at 20% 20%, #b7e4c720 0%, transparent 50%),
+                      radial-gradient(circle at 80% 80%, #6ec72d20 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .wrapper { width: 100%; max-width: 680px; position: relative; z-index: 1; }
+
+  /* Header */
+  .header { text-align: center; margin-bottom: 36px; }
+  .header h1 { font-family: 'DM Serif Display', serif; font-size: clamp(28px,5vw,42px); color: var(--dark); line-height: 1.15; margin-bottom: 10px; }
+  .header p { color: var(--grey); font-size: 15px; font-weight: 300; }
+
+  /* Settings toggle */
+  .settings-toggle {
+    display: flex; align-items: center; gap: 8px;
+    background: white; border: 1.5px solid #c5e8a0; color: #3a8a10;
+    padding: 9px 18px; border-radius: 9px; font-size: 13px; font-weight: 600;
+    cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.2s;
+    margin-bottom: 16px; box-shadow: 0 2px 8px rgba(110,199,45,0.07);
+  }
+  .settings-toggle:hover { background: var(--green-pale); }
+
+  /* Settings panel */
+  .settings-panel { display: none; background: white; border-radius: var(--radius); border: 1.5px solid #ddeee3; padding: 28px; margin-bottom: 24px; box-shadow: var(--shadow); }
+  .settings-panel.open { display: block; }
+  .settings-section { margin-bottom: 24px; }
+  .settings-section:last-child { margin-bottom: 0; }
+  .settings-section-title { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--green-mid); margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1.5px solid var(--green-pale); }
+  .item-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+  .list-item { display: flex; align-items: center; gap: 10px; background: var(--cream); padding: 10px 14px; border-radius: 8px; border: 1px solid #e8f4eb; }
+  .list-item .val { font-size: 13px; color: var(--dark); flex: 1; word-break: break-all; }
+  .btn-remove { background: none; border: none; color: #bbb; cursor: pointer; font-size: 18px; line-height: 1; padding: 0 4px; border-radius: 4px; transition: color 0.2s; }
+  .btn-remove:hover { color: #e57373; }
+  .add-row { display: flex; gap: 8px; }
+  .add-row input { flex: 1; }
+  .btn-add { background: #1A1A1A; color: white; border: none; border-radius: 8px; padding: 10px 16px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; white-space: nowrap; transition: background 0.2s; }
+  .btn-add:hover { background: var(--green); color: #1A1A1A; }
+
+  /* Card */
+  .card { background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow); padding: 40px; border: 1px solid #e8f4eb; }
+  .section-label { font-size: 11px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: #3a8a10; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1.5px solid var(--green-pale); }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 28px; }
+  .field { display: flex; flex-direction: column; gap: 7px; }
+  .field.full { grid-column: 1 / -1; }
+  label { font-size: 13px; font-weight: 600; color: var(--dark); }
+  label span.req { color: var(--green-mid); margin-left: 2px; }
+  input, select, textarea {
+    width: 100%; padding: 11px 14px; border: 1.5px solid #ddeee3; border-radius: 9px;
+    font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--dark);
+    background: var(--cream); transition: border-color 0.2s, box-shadow 0.2s; outline: none; appearance: none;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--green-mid); background: #fff; box-shadow: 0 0 0 3px #6ec72d22; }
+  textarea { resize: vertical; min-height: 90px; }
+
+  .days-display { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: var(--green-pale); border-radius: 9px; border: 1.5px solid #b7e4c7; }
+  .days-display .count { font-family: 'DM Serif Display', serif; font-size: 28px; color: #3a8a10; min-width: 40px; }
+  .days-display .label { font-size: 13px; color: #3a8a10; font-weight: 500; }
+
+  .type-group { display: flex; gap: 10px; flex-wrap: wrap; }
+  .type-pill input[type="radio"] { display: none; }
+  .type-pill label { display: inline-flex; align-items: center; gap: 6px; padding: 9px 18px; border-radius: 999px; border: 1.5px solid #ddeee3; background: var(--cream); color: var(--grey); font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+  .type-pill input[type="radio"]:checked + label { background: var(--green); border-color: var(--green); color: #1A1A1A; }
+
+  .divider { margin: 28px 0; border: none; border-top: 1.5px solid var(--green-pale); }
+
+  .btn-submit { width: 100%; padding: 15px; background: #1A1A1A; color: white; border: none; border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 600; cursor: pointer; transition: background 0.2s, transform 0.15s; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 16px rgba(0,0,0,0.15); }
+  .btn-submit:hover { background: var(--green); color: #1A1A1A; transform: translateY(-1px); }
+  .btn-submit svg { width: 18px; height: 18px; }
+
+  .success-banner { display: none; background: var(--green-pale); border: 1.5px solid var(--green-mid); border-radius: 10px; padding: 16px 20px; margin-top: 20px; color: #3a8a10; font-size: 14px; font-weight: 500; text-align: center; }
+  .success-banner.show { display: block; }
+
+  /* Capacity alert */
+  .capacity-alert { display: none; background: #fde8e8; border: 2px solid #e53935; border-radius: 10px; padding: 18px 20px; margin-top: 16px; }
+  .capacity-alert.show { display: flex; align-items: flex-start; gap: 14px; }
+  .capacity-alert .alert-icon { font-size: 24px; flex-shrink: 0; }
+  .capacity-alert .alert-title { font-size: 15px; font-weight: 700; color: #c62828; margin-bottom: 6px; }
+  .capacity-alert .alert-msg { font-size: 13px; color: #b71c1c; line-height: 1.5; }
+  .capacity-alert .alert-names { font-size: 12px; color: #c62828; margin-top: 8px; font-style: italic; }
+
+  /* Password overlay */
+  .pwd-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 999; align-items: center; justify-content: center; }
+  .pwd-overlay.show { display: flex; }
+  .pwd-box { background: white; border-radius: 14px; padding: 32px 28px; width: 100%; max-width: 360px; box-shadow: 0 8px 40px rgba(0,0,0,0.2); text-align: center; }
+  .pwd-box .lock-icon { font-size: 36px; margin-bottom: 12px; }
+  .pwd-box h3 { font-family: 'DM Serif Display', serif; font-size: 22px; color: #1A1A1A; margin-bottom: 20px; }
+  .pwd-box input { width: 100%; padding: 12px 14px; border: 1.5px solid #ddd; border-radius: 9px; font-size: 15px; font-family: 'DM Sans', sans-serif; text-align: center; letter-spacing: 0.1em; margin-bottom: 14px; outline: none; }
+  .pwd-box input:focus { border-color: #6EC72D; box-shadow: 0 0 0 3px #6ec72d22; }
+  .pwd-error { color: #e53935; font-size: 13px; margin-bottom: 12px; display: none; }
+  .pwd-error.show { display: block; }
+  .pwd-buttons { display: flex; gap: 10px; }
+  .pwd-btn-cancel { flex: 1; padding: 11px; border: 1.5px solid #ddd; border-radius: 9px; background: none; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600; color: #666; cursor: pointer; }
+  .pwd-btn-enter { flex: 1; padding: 11px; border: none; border-radius: 9px; background: #1A1A1A; color: white; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; }
+  .pwd-btn-enter:hover { background: #6EC72D; color: #1A1A1A; }
+
+  @media (max-width: 520px) {
+    .card { padding: 24px 18px; }
+    .form-grid { grid-template-columns: 1fr; }
+    .field.full { grid-column: 1; }
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <div class="header">
+    <h1>Annual Leave Request</h1>
+    <p>Complete the form below — your request will be sent to your authoriser automatically.</p>
+  </div>
+
+  <button class="settings-toggle" onclick="toggleSettings()">
+    ⚙️ Admin Settings — Manage Approvers &amp; Notification Emails
+  </button>
+
+  <div class="settings-panel" id="settingsPanel">
+    <div class="settings-section">
+      <div class="settings-section-title">👤 Approvers</div>
+      <div class="item-list" id="approverList"></div>
+      <div class="add-row">
+        <input type="text" id="newApproverName" placeholder="Full name e.g. John Smith">
+        <button class="btn-add" onclick="addApprover()">+ Add</button>
+      </div>
+    </div>
+    <div class="settings-section">
+      <div class="settings-section-title">📧 Notification Email Addresses</div>
+      <div class="item-list" id="emailList"></div>
+      <div class="add-row">
+        <input type="email" id="newEmail" placeholder="colleague@gtrailway.com">
+        <button class="btn-add" onclick="addEmail()">+ Add</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-label">👤 Personal Details</div>
+    <div class="form-grid">
+      <div class="field">
+        <label>Full Name <span class="req">*</span></label>
+        <input type="text" id="name" placeholder="e.g. Sarah Johnson">
+      </div>
+      <div class="field">
+        <label>Your Email <span class="req">*</span></label>
+        <input type="email" id="requesterEmail" placeholder="yourname@gtrailway.com">
+      </div>
+      <div class="field">
+        <label>Team <span class="req">*</span></label>
+        <select id="team">
+          <option value="">— Select your team —</option>
+          <option value="Metro">Metro</option>
+          <option value="Coastal">Coastal</option>
+          <option value="DTD">DTD</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Date of Request</label>
+        <input type="date" id="requestDate" readonly style="background:#f0f7f2;color:#3a8a10;font-weight:600;">
+      </div>
+    </div>
+
+    <hr class="divider">
+
+    <div class="section-label">📅 Leave Details</div>
+    <div class="form-grid">
+      <div class="field">
+        <label>Date From <span class="req">*</span></label>
+        <input type="date" id="startDate">
+      </div>
+      <div class="field">
+        <label>Date To <span class="req">*</span></label>
+        <input type="date" id="endDate">
+      </div>
+      <div class="field full">
+        <label>Number of Working Days</label>
+        <div class="days-display">
+          <span class="count" id="daysCount">1</span>
+          <span class="label">working days selected</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="field" style="margin-bottom:28px;">
+      <label>Type of Leave <span class="req">*</span></label>
+      <div class="type-group" style="margin-top:4px;">
+        <div class="type-pill"><input type="radio" name="leaveType" id="typeHoliday" value="Annual Leave" checked><label for="typeHoliday">🏖️ Annual Leave</label></div>
+        <div class="type-pill"><input type="radio" name="leaveType" id="typeOther" value="Other"><label for="typeOther">📌 Other</label></div>
+      </div>
+    </div>
+
+    <hr class="divider">
+
+    <div class="field" style="margin-bottom:28px;">
+      <label>Notes (optional)</label>
+      <textarea id="notes" placeholder="Any additional information or cover arrangements..."></textarea>
+    </div>
+
+    <button class="btn-submit" onclick="submitRequest()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+      Submit &amp; Notify Authoriser
+    </button>
+
+    <div class="success-banner" id="successBanner">
+      <div style="font-size:17px;font-weight:700;margin-bottom:8px;">📧 Almost done — one more step!</div>
+      <div style="font-size:14px;line-height:1.6;">Your email client should now be open with a pre-filled request ready to go.<br><strong>Please click Send</strong> in your email client to notify your authoriser.<br><span style="font-size:13px;opacity:0.85;">If your email client didn't open, please check your browser has not blocked a pop-up, then try submitting again.</span></div>
+    </div>
+
+    <div class="capacity-alert" id="capacityAlert">
+      <div class="alert-icon">🚫</div>
+      <div class="alert-body">
+        <div class="alert-title">Unable to Submit</div>
+        <div class="alert-msg" id="alertMsg">Your team already has 3 members off on these dates. Please contact your line manager to discuss your request.</div>
+        <div class="alert-names" id="alertNames"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Password Overlay -->
+<div class="pwd-overlay" id="pwdOverlay">
+  <div class="pwd-box">
+    <div class="lock-icon">🔒</div>
+    <h3>Admin Access</h3>
+    <input type="password" id="pwdInput" placeholder="Enter password" onkeydown="if(event.key==='Enter') checkPassword()">
+    <div class="pwd-error" id="pwdError">❌ Incorrect password. Please try again.</div>
+    <div class="pwd-buttons">
+      <button class="pwd-btn-cancel" onclick="closePwd()">Cancel</button>
+      <button class="pwd-btn-enter" onclick="checkPassword()">Unlock</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // --- Data ---
+  var approvers = JSON.parse(localStorage.getItem('approvers') || '["Sebastien Fahr","Joshua Weir"]');
+  var notifEmails = JSON.parse(localStorage.getItem('notifEmails') || '["joshua.weir@gtrailway.com","sebastien.fahr@gtrailway.com"]');
+  var requests = JSON.parse(localStorage.getItem('leaveRequests') || '[]');
+  var settingsUnlocked = false;
+
+  // --- Init dates ---
+  var today = new Date();
+  document.getElementById('requestDate').valueAsDate = today;
+  document.getElementById('startDate').valueAsDate = today;
+  document.getElementById('endDate').valueAsDate = today;
+  updateDays();
+  renderApproverList();
+  renderEmailList();
+
+  // --- Password ---
+  function toggleSettings() {
+    if (settingsUnlocked) {
+      var panel = document.getElementById('settingsPanel');
+      panel.classList.toggle('open');
+      return;
+    }
+    document.getElementById('pwdInput').value = '';
+    document.getElementById('pwdError').classList.remove('show');
+    document.getElementById('pwdOverlay').classList.add('show');
+    setTimeout(function(){ document.getElementById('pwdInput').focus(); }, 100);
+  }
+
+  function checkPassword() {
+    var val = document.getElementById('pwdInput').value;
+    if (val === 'TrackCircuit3') {
+      settingsUnlocked = true;
+      document.getElementById('pwdOverlay').classList.remove('show');
+      document.getElementById('settingsPanel').classList.add('open');
+    } else {
+      document.getElementById('pwdError').classList.add('show');
+      document.getElementById('pwdInput').value = '';
+      document.getElementById('pwdInput').focus();
+    }
+  }
+
+  function closePwd() {
+    document.getElementById('pwdOverlay').classList.remove('show');
+  }
+
+  // --- Working days ---
+  function getWorkingDays(s, e) {
+    if (!s || !e || e < s) return 0;
+    var count = 0, cur = new Date(s);
+    while (cur <= e) { if (cur.getDay() !== 0 && cur.getDay() !== 6) count++; cur.setDate(cur.getDate()+1); }
+    return count;
+  }
+  function updateDays() {
+    var s = document.getElementById('startDate').value;
+    var e = document.getElementById('endDate').value;
+    if (s && e) document.getElementById('daysCount').textContent = Math.max(0, getWorkingDays(new Date(s), new Date(e)));
+  }
+  document.getElementById('startDate').addEventListener('change', updateDays);
+  document.getElementById('endDate').addEventListener('change', updateDays);
+
+  // --- Approvers ---
+  function renderApproverList() {
+    var list = document.getElementById('approverList');
+    if (approvers.length === 0) { list.innerHTML = '<p style="font-size:13px;color:#666">No approvers added yet.</p>'; return; }
+    list.innerHTML = approvers.map(function(a,i){ return '<div class="list-item"><span class="val">👤 '+a+'</span><button class="btn-remove" onclick="removeApprover('+i+')">×</button></div>'; }).join('');
+  }
+  function addApprover() {
+    var val = document.getElementById('newApproverName').value.trim();
+    if (!val) return;
+    approvers.push(val);
+    localStorage.setItem('approvers', JSON.stringify(approvers));
+    document.getElementById('newApproverName').value = '';
+    renderApproverList();
+  }
+  function removeApprover(i) {
+    approvers.splice(i,1);
+    localStorage.setItem('approvers', JSON.stringify(approvers));
+    renderApproverList();
+  }
+
+  // --- Emails ---
+  function renderEmailList() {
+    var list = document.getElementById('emailList');
+    if (notifEmails.length === 0) { list.innerHTML = '<p style="font-size:13px;color:#666">No emails added yet.</p>'; return; }
+    list.innerHTML = notifEmails.map(function(em,i){ return '<div class="list-item"><span class="val">📧 '+em+'</span><button class="btn-remove" onclick="removeEmail('+i+')">×</button></div>'; }).join('');
+  }
+  function addEmail() {
+    var val = document.getElementById('newEmail').value.trim();
+    if (!val || !val.includes('@')) { alert('Please enter a valid email.'); return; }
+    notifEmails.push(val);
+    localStorage.setItem('notifEmails', JSON.stringify(notifEmails));
+    document.getElementById('newEmail').value = '';
+    renderEmailList();
+  }
+  function removeEmail(i) {
+    notifEmails.splice(i,1);
+    localStorage.setItem('notifEmails', JSON.stringify(notifEmails));
+    renderEmailList();
+  }
+
+  // --- Capacity check ---
+  function datesOverlap(s1,e1,s2,e2) { return new Date(s1) <= new Date(e2) && new Date(e1) >= new Date(s2); }
+
+  // --- Submit ---
+  function submitRequest() {
+    var name = document.getElementById('name').value.trim();
+    var team = document.getElementById('team').value;
+    var requesterEmail = document.getElementById('requesterEmail').value.trim();
+    var requestDate = document.getElementById('requestDate').value;
+    var startDate = document.getElementById('startDate').value;
+    var endDate = document.getElementById('endDate').value;
+    var leaveType = document.querySelector('input[name="leaveType"]:checked').value;
+    var notes = document.getElementById('notes').value.trim();
+    var days = document.getElementById('daysCount').textContent;
+
+    document.getElementById('capacityAlert').classList.remove('show');
+
+    if (!name || !requesterEmail || !team || !startDate || !endDate) { alert('Please fill in all required fields including your team.'); return; }
+    if (!requesterEmail.includes('@')) { alert('Please enter a valid email address.'); return; }
+    if (new Date(endDate) < new Date(startDate)) { alert('End date cannot be before start date.'); return; }
+
+    // Capacity check
+    var overlapping = requests.filter(function(r){ return r.name !== name && r.team === team && datesOverlap(startDate, endDate, r.startDate, r.endDate); });
+    if (overlapping.length >= 3) {
+      var names = overlapping.map(function(r){ return r.name; }).join(', ');
+      document.getElementById('alertNames').textContent = '';
+      document.getElementById('capacityAlert').classList.add('show');
+      document.getElementById('capacityAlert').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+
+    // Save request
+    requests.unshift({ name: name, team: team, requesterEmail: requesterEmail, requestDate: requestDate, startDate: startDate, endDate: endDate, days: days, leaveType: leaveType, notes: notes, id: Date.now() });
+    localStorage.setItem('leaveRequests', JSON.stringify(requests));
+
+    // Build email
+    var toList = notifEmails.join(',');
+
+    var subject = encodeURIComponent('Annual Leave Request \u2013 ' + name + ' | ' + formatDate(startDate) + ' to ' + formatDate(endDate));
+    var body = encodeURIComponent(
+      'APPROVED\nDECLINED\n\n(Delete whichever does not apply, then press Send)\n\n' +
+      rep('═',40) + '\n' +
+      '*** ANNUAL LEAVE REQUEST ***\n' + rep('═',40) + '\n\n' +
+      'STAFF MEMBER:     ' + name + '\n' +
+      'STAFF EMAIL:      ' + requesterEmail + '\n' +
+      'TEAM:             ' + team + '\n' +
+      'DATE FROM:        ' + formatDate(startDate) + '\n' +
+      'DATE TO:          ' + formatDate(endDate) + '\n' +
+      'WORKING DAYS:     ' + days + '\n' +
+      rep('═',40) + '\n\n' +
+      'Leave Type:       ' + leaveType + '\n' +
+      'Date of Request:  ' + formatDate(requestDate) + '\n' +
+      (notes ? '\n' + rep('─',40) + '\n\u{1F4DD} NOTE FROM ' + name.toUpperCase() + ':\n' + notes + '\n' : '\n' + rep('─',40) + '\n\u{1F4DD} NOTE FROM ' + name.toUpperCase() + ':\nNo additional notes provided.\n') +
+      '\n' + rep('═',40) + '\n'
+    );
+
+    // Send via FormSubmit to both approvers automatically
+    var emailBody =
+      'APPROVED\nDECLINED\n\n(Delete whichever does not apply, then press Send)\n\n' +
+      '========================================\n' +
+      '*** ANNUAL LEAVE REQUEST ***\n========================================\n\n' +
+      'STAFF MEMBER:     ' + name + '\n' +
+      'STAFF EMAIL:      ' + requesterEmail + '\n' +
+      'TEAM:             ' + team + '\n' +
+      'DATE FROM:        ' + formatDate(startDate) + '\n' +
+      'DATE TO:          ' + formatDate(endDate) + '\n' +
+      'WORKING DAYS:     ' + days + '\n' +
+      '========================================\n\n' +
+      'Leave Type:       ' + leaveType + '\n' +
+      'Date of Request:  ' + formatDate(requestDate) + '\n\n' +
+      '----------------------------------------\n' +
+      'NOTE FROM ' + name.toUpperCase() + ':\n' +
+      (notes ? notes : 'No additional notes provided.') + '\n' +
+      '========================================\n';
+
+    var emailSubject = 'Annual Leave Request – ' + name + ' | ' + formatDate(startDate) + ' to ' + formatDate(endDate);
+
+    fetch('https://formsubmit.co/ajax/joshua.weir@gtrailway.com', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({
+        _subject: emailSubject,
+        _cc: 'sebastien.fahr@gtrailway.com',
+        _replyto: requesterEmail,
+        _template: 'box',
+        message: emailBody,
+        staff_member: name,
+        staff_email: requesterEmail,
+        team: team,
+        date_from: formatDate(startDate),
+        date_to: formatDate(endDate),
+        working_days: days,
+        leave_type: leaveType
+      })
+    }).then(function(res){ return res.json(); })
+      .then(function(data){ console.log('FormSubmit:', data); })
+      .catch(function(err){ console.error('FormSubmit error:', err); });
+
+    document.getElementById('successBanner').classList.add('show');
+    setTimeout(function(){ document.getElementById('successBanner').classList.remove('show'); }, 5000);
+
+    document.getElementById('name').value = '';
+    document.getElementById('requesterEmail').value = '';
+    document.getElementById('startDate').valueAsDate = new Date();
+    document.getElementById('endDate').valueAsDate = new Date();
+    document.getElementById('notes').value = '';
+    document.getElementById('daysCount').textContent = '1';
+    document.getElementById('typeHoliday').checked = true;
+    document.getElementById('team').value = '';
+  }
+
+  function formatDate(d) {
+    if (!d) return '-';
+    return new Date(d + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+
+  function rep(ch, n) { return Array(n+1).join(ch); }
+</script>
+</body>
+</html>
