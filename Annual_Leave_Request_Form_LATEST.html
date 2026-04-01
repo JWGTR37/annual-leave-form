@@ -407,21 +407,13 @@
 
     var emailSubject = encodeURIComponent('Annual Leave Request - ' + name + ' | ' + formatDate(startDate) + ' to ' + formatDate(endDate));
     var emailBody = encodeURIComponent(
-      'APPROVED / DECLINED (please delete as appropriate)\n\n' +
-      '========================================\n' +
-      'ANNUAL LEAVE REQUEST\n' +
-      '========================================\n\n' +
-      'Staff Member:    ' + name + '\n' +
-      'Staff Email:     ' + requesterEmail + '\n' +
-      'Team:            ' + team + '\n' +
-      'Leave Type:      ' + leaveType + '\n' +
-      'Date From:       ' + formatDate(startDate) + '\n' +
-      'Date To:         ' + formatDate(endDate) + '\n' +
-      'Working Days:    ' + days + '\n' +
-      'Date of Request: ' + formatDate(requestDate) + '\n\n' +
-      '----------------------------------------\n' +
-      'Notes: ' + (notes || 'No additional notes provided.') + '\n' +
-      '========================================'
+      'Please reply with APPROVED or DECLINED\n\n' +
+      'Name:        ' + name + '\n' +
+      'Team:        ' + team + '\n' +
+      'Dates:       ' + formatDate(startDate) + ' - ' + formatDate(endDate) + '\n' +
+      'Days:        ' + days + '\n' +
+      'Leave Type:  ' + leaveType + '\n' +
+      'Notes:       ' + (notes || 'None')
     );
 
     var mailtoLink = 'mailto:' + routing.to + '?cc=' + encodeURIComponent(routing.cc) + '&subject=' + emailSubject + '&body=' + emailBody;
