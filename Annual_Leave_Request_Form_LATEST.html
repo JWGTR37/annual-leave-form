@@ -386,13 +386,16 @@
     if (!requesterEmail.includes('@')) { alert('Please enter a valid email address.'); return; }
     if (new Date(endDate) < new Date(startDate)) { alert('End date cannot be before start date.'); return; }
 
-    // Capacity check
-    var overlapping = requests.filter(function(r){ return r.name !== name && r.team === team && datesOverlap(startDate, endDate, r.startDate, r.endDate); });
-    if (overlapping.length >= 3) {
-      document.getElementById('alertNames').textContent = '';
-      document.getElementById('capacityAlert').classList.add('show');
-      document.getElementById('capacityAlert').scrollIntoView({ behavior: 'smooth', block: 'center' });
-      return;
+    // Capacity check (Metro and Coastal only)
+    var teamsWithCapacity = ['Metro', 'Coastal'];
+    if (teamsWithCapacity.indexOf(team) !== -1) {
+      var overlapping = requests.filter(function(r){ return r.name !== name && r.team === team && datesOverlap(startDate, endDate, r.startDate, r.endDate); });
+      if (overlapping.length >= 3) {
+        document.getElementById('alertNames').textContent = '';
+        document.getElementById('capacityAlert').classList.add('show');
+        document.getElementById('capacityAlert').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
     }
 
     // Save request
