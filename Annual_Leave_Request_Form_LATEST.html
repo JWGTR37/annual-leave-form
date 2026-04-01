@@ -405,32 +405,27 @@
     // Get routing based on team
     var routing = teamRouting[team] || { to: 'joshua.weir@gtrailway.com', cc: '' };
 
-    var emailSubject = 'Annual Leave Request – ' + name + ' | ' + formatDate(startDate) + ' to ' + formatDate(endDate);
+    var emailSubject = encodeURIComponent('Annual Leave Request - ' + name + ' | ' + formatDate(startDate) + ' to ' + formatDate(endDate));
+    var emailBody = encodeURIComponent(
+      'APPROVED / DECLINED (please delete as appropriate)\n\n' +
+      '========================================\n' +
+      'ANNUAL LEAVE REQUEST\n' +
+      '========================================\n\n' +
+      'Staff Member:    ' + name + '\n' +
+      'Staff Email:     ' + requesterEmail + '\n' +
+      'Team:            ' + team + '\n' +
+      'Leave Type:      ' + leaveType + '\n' +
+      'Date From:       ' + formatDate(startDate) + '\n' +
+      'Date To:         ' + formatDate(endDate) + '\n' +
+      'Working Days:    ' + days + '\n' +
+      'Date of Request: ' + formatDate(requestDate) + '\n\n' +
+      '----------------------------------------\n' +
+      'Notes: ' + (notes || 'No additional notes provided.') + '\n' +
+      '========================================'
+    );
 
-    // Send via FormSubmit with team-based routing
-    fetch('https://formsubmit.co/ajax/' + routing.to, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      body: JSON.stringify({
-        _subject: emailSubject,
-        _cc: routing.cc,
-        _replyto: requesterEmail,
-        _template: 'table',
-        _captcha: 'false',
-        'Action Required': 'Reply to this email with APPROVED or DECLINED',
-        'Staff Member': name,
-        'Staff Email': requesterEmail,
-        'Team': team,
-        'Date From': formatDate(startDate),
-        'Date To': formatDate(endDate),
-        'Working Days': days,
-        'Leave Type': leaveType,
-        'Date of Request': formatDate(requestDate),
-        'Notes': notes || 'No additional notes provided'
-      })
-    }).then(function(res){ return res.json(); })
-      .then(function(data){ console.log('FormSubmit:', data); })
-      .catch(function(err){ console.error('FormSubmit error:', err); });
+    var mailtoLink = 'mailto:' + routing.to + '?cc=' + encodeURIComponent(routing.cc) + '&subject=' + emailSubject + '&body=' + emailBody;
+    window.open(mailtoLink);
 
     document.getElementById('successBanner').classList.add('show');
     setTimeout(function(){ document.getElementById('successBanner').classList.remove('show'); }, 5000);
